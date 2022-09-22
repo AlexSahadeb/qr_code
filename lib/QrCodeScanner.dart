@@ -2,8 +2,9 @@ import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:share/share.dart';
-import 'package:skany/ButtonWidget.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:skany/widget/ButtonWidget.dart';
+import 'package:skany/widget/custom_drawer.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class QrCodeScanner extends StatefulWidget {
   const QrCodeScanner({Key? key}) : super(key: key);
@@ -15,30 +16,31 @@ class QrCodeScanner extends StatefulWidget {
 class _QrCodeScannerState extends State<QrCodeScanner> {
   String qrCode = "";
   void _launchURL() async {
-    if (await launch(qrCode)) throw "Could not launch $qrCode";
-    //if (!await launch(qrCode)) throw 'Could not launch $qrCode';
+    if (await launchUrlString(qrCode)) ;
   }
 
+  bool isVisivle = false;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Color.fromARGB(255, 255, 255, 255),
         appBar: AppBar(
-          backgroundColor: Colors.white70,
+          // backgroundColor: Colors.white70,
           title: Text(
             "SKANY",
-            style: TextStyle(color: Colors.black87, fontFamily: "Sofia"),
+            style: TextStyle(color: Colors.white, fontFamily: "Sofia"),
           ),
           centerTitle: true,
           elevation: 0.0,
         ),
+        drawer: CustomDrawer(),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "[ Skany Result ]",
+                "[ Skany Result 👎 ]",
                 style: TextStyle(
                     fontSize: 16,
                     color: Colors.black,
@@ -57,68 +59,41 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
               SizedBox(
                 height: 100,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            final data = ClipboardData(text: qrCode);
-                            Clipboard.setData(data);
-                          },
-                          icon: const Icon(
-                            Icons.copy,
-                            size: 20,
-                          )),
-                      const Text(
-                        "Copy",
-                        style: TextStyle(fontSize: 14),
-                      )
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      IconButton(
-                          onPressed: () => _launchURL(),
-                          icon: const Icon(
-                            Icons.open_in_browser,
-                            size: 20,
-                          )),
-                      const Text(
-                        "Open",
-                        style: TextStyle(fontSize: 14),
-                      )
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            if (qrCode.isNotEmpty) {
-                              Share.share(qrCode);
-                            } else {
-                              return null;
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.share,
-                            size: 20,
-                          )),
-                      const Text(
-                        "Share",
-                        style: TextStyle(fontSize: 14),
-                      )
-                    ],
-                  )
-                ],
+              Visibility(
+                visible: isVisivle,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButtonWidget(
+                        text: "Copy",
+                        icon: Icons.copy,
+                        onClicked: () {
+                          final data = ClipboardData(text: qrCode);
+                          Clipboard.setData(data);
+                        }),
+                    IconButtonWidget(
+                        text: "Open",
+                        icon: Icons.open_in_browser,
+                        onClicked: () => _launchURL()),
+                    IconButtonWidget(
+                        text: "Share",
+                        icon: Icons.share,
+                        onClicked: () {
+                          if (qrCode.isNotEmpty) {
+                            Share.share(qrCode);
+                          } else {
+                            return null;
+                          }
+                        })
+                  ],
+                ),
               ),
               SizedBox(
                 height: 15,
               ),
               ButtonWidget(
-                color: Colors.white,
+                // color: Colors.white,
                 text: "Scan QR Code",
                 onClicked: () => scanQrCode(),
               )
@@ -141,6 +116,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
       if (!mounted) return;
 
       setState(() {
+        isVisivle = true;
         this.qrCode = qrCode.isEmpty
             ? ''
             : qrCode == "-1"

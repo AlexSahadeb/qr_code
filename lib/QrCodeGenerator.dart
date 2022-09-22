@@ -1,6 +1,13 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:math' as math;
+import 'package:screenshot/screenshot.dart';
+import 'package:skany/widget/ButtonWidget.dart';
+import 'package:skany/widget/custom_drawer.dart';
 
 class QrCodeGenerator extends StatefulWidget {
   const QrCodeGenerator({Key? key}) : super(key: key);
@@ -11,37 +18,73 @@ class QrCodeGenerator extends StatefulWidget {
 
 class _QrCodeGeneratorState extends State<QrCodeGenerator> {
   final controller = TextEditingController();
+
+  ScreenshotController screenshotController = ScreenshotController();
+  bool isVisible = false;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        appBar: AppBar(
-          backgroundColor: Colors.white70,
-          title: Text(
-            "SKANY",
-            style: TextStyle(color: Colors.black87, fontFamily: "Sofia"),
+    return SafeArea(
+      child: Scaffold(
+          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+          appBar: AppBar(
+            // backgroundColor: Colors.white70,
+            title: Text(
+              "SKANY",
+              style: TextStyle(color: Colors.white, fontFamily: "Sofia"),
+            ),
+            centerTitle: true,
+            elevation: 0.0,
           ),
-          centerTitle: true,
-          elevation: 0.0,
-        ),
-        body: Center(
-            child: SingleChildScrollView(
-                child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            QrImage(
-              data: controller.text,
-              size: math.min(MediaQuery.of(context).size.width,
-                      MediaQuery.of(context).size.height) /
-                  1.3,
-              backgroundColor: Color.fromARGB(179, 255, 255, 255),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            buildTextField(context),
-          ],
-        ))));
+          drawer: CustomDrawer(),
+          body: Center(
+              child: SingleChildScrollView(
+                  child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Screenshot(
+                controller: screenshotController,
+                child: QrImage(
+                  //key: globalKey,
+                  data: controller.text,
+                  size: math.min(MediaQuery.of(context).size.width,
+                          MediaQuery.of(context).size.height) /
+                      1.3,
+                  backgroundColor: Color.fromARGB(179, 255, 255, 255),
+                ),
+              ),
+              SizedBox(
+                height: 40,
+              ),
+              Visibility(
+                visible: isVisible,
+                child: Align(
+                    alignment: Alignment.center,
+                    child: ButtonWidget(
+                        text: "Take a Photo",
+                        onClicked: () async {
+                          final image = await screenshotController.capture();
+                          if (image == null) return;
+                          await saveImage(image);
+                        })),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              buildTextField(context),
+            ],
+          )))),
+    );
+  }
+
+  saveImage(Uint8List bytes) async {
+    await [Permission.storage].request();
+    final time = DateTime.now()
+        .toIso8601String()
+        .replaceAll(".", "-")
+        .replaceAll(":", "-");
+    final name = "Screensort_$time";
+    final result = await ImageGallerySaver.saveImage(bytes, name: name);
+    return result;
   }
 
   buildTextField(BuildContext context) {
@@ -72,7 +115,9 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                   color: Color(0XFF5fa693),
                   icon: Icon(Icons.done, size: 30),
                   onPressed: () {
-                    setState(() {});
+                    setState(() {
+                      isVisible = true;
+                    });
                   }))),
         ));
   }

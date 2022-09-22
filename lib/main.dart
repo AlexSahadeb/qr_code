@@ -1,11 +1,15 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:skany/QrCodeGenerator.dart';
 import 'package:skany/QrCodeScanner.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((value) => runApp(MyApp()));
 }
 
 class MyApp extends StatelessWidget {
