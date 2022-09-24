@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -27,11 +26,12 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
       child: Scaffold(
           backgroundColor: Color.fromARGB(255, 255, 255, 255),
           appBar: AppBar(
-            // backgroundColor: Colors.white70,
+            backgroundColor: Colors.white70,
             title: Text(
               "SKANY",
-              style: TextStyle(color: Colors.white, fontFamily: "Sofia"),
+              style: TextStyle(color: Colors.black, fontFamily: "Sofia"),
             ),
+            iconTheme: IconThemeData(color: Colors.black),
             centerTitle: true,
             elevation: 0.0,
           ),
@@ -44,7 +44,6 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
               Screenshot(
                 controller: screenshotController,
                 child: QrImage(
-                  //key: globalKey,
                   data: controller.text,
                   size: math.min(MediaQuery.of(context).size.width,
                           MediaQuery.of(context).size.height) /
